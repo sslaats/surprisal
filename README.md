@@ -1,5 +1,5 @@
 # What's surprising about surprisal
-## Code for the simulations in Slaats, Meyer & Martin (2023). 
+## Code for the simulations in Slaats & Martin (2023). 
 Supplementary materials: https://osf.io/xp3r7/
 
 Script descriptions are: [script name] : [description]
