@@ -15,7 +15,7 @@ else:
 device = torch.device(dev)
 
 class LSTM_predictor(torch.nn.Module):
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, nlayers=2):
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, nlayers=1):
         super(LSTM_predictor, self).__init__()
         self.hidden_dim = hidden_dim
         self.word_embeddings = torch.nn.Embedding(vocab_size, embedding_dim).to(device)

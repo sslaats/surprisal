@@ -44,10 +44,10 @@ class Grammar():
         
         # choose a complement
         if subordinate_clauses < self.max_subordinate:
-            if random.choice([True, True, False]):
-                return f'(VP (V {v}) {self.NP(subordinate_clauses)})'
+            if random.choice([True, True, False]): # was True, True, False
+                return f'(VP {self.NP(subordinate_clauses)} (V {v}))' # for syntax manipulation: changed order
             else:
                 subordinate_clauses += 1
-                return f'(VP (V {v}) {self.CP(self.NP(subordinate_clauses), self.VP(subordinate_clauses))})'
+                return f'(VP {self.CP(self.NP(subordinate_clauses), self.VP(subordinate_clauses))} (V {v}))'
         else:
-            return f'(VP (V {v}) {self.NP(subordinate_clauses)})'
+            return f'(VP {self.NP(subordinate_clauses)} (V {v}))'

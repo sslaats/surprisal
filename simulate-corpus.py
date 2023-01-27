@@ -24,6 +24,9 @@ language['pos'] = ['comp',
                    'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n','n', 'n', 'n', 'n',
                    'v', 'v', 'v', 'v', 'v', 'v', 'v', 'v', 'v', 'v', 'v', 'v']
 language['freq'] = np.ones((len(language['word'])))
+#language.loc[language['word'] == 'woman', 'freq'] = 2      # 'woman' twice as frequent as all the other nouns
+#language.loc[language['word'] == 'discovers', 'freq'] = 2  # 'discovers' twice as frequent as all the other verbs
+#language.loc[language['word'] == 'a', 'freq'] = 2          # 'a' twice as frequent as all the other determiners
 language['p'] = language['freq'] / sum(language['freq'])
 
 # language = pd.read_csv('/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/language.csv')
@@ -32,9 +35,8 @@ language['p'] = language['freq'] / sum(language['freq'])
 update = False
 memory_trace = 0
 sentence_no = 10000
-sentence_lengths = np.round(np.random.lognormal(mean=2.85,sigma=0.4,size=sentence_no)) # set up probability distribution for sentence length
 
-# %%
+# %% generate corpus
 gramm = Grammar(language, update= update, memory_trace = memory_trace, max_subordinate = 5)
 
 corpus = []
@@ -48,5 +50,6 @@ while len(corpus) < sentence_no:
     except(KeyError, RecursionError):
         continue
 
-with open('/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/corpus.txt', 'w') as f:
-    f.write('\n'.join(corpus))
+# %% save training set
+with open('/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/corpus-syn.txt', 'w') as f:
+    f.write('\n'.join(corpus[:8000]))

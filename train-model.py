@@ -30,13 +30,13 @@ else:
 device = torch.device(dev) 
 
 # %% load the data & settings
-with open('/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/corpus.txt', 'r') as f:
+with open('/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/corpus-syn.txt', 'r') as f:
     corpus = f.readlines()
     
 language = pd.read_csv('/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/language.csv')
 
 PATH = '/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations'
-mtype = 'random'
+mtype = 'structured'
 
 # %% prepare the data
 wordlist = []
@@ -53,6 +53,17 @@ total_words = sum([len(w) for w in wordlist])
 
 # %% prepare the training data
 # maximum context is 10 words
+from utils import prepare_ngrams
+
+if mtype == 'random':
+    scrambled = True
+else:
+    scrambled = False
+    
+train = list(prepare_ngrams(wordlist[:8000], scrambled=scrambled))
+#test = list(prepare_ngrams(wordlist[8000:], scrambled=False)) # always false
+# %%
+"""
 ngrammed = []
 for i,sentence in enumerate(wordlist):
     if mtype == 'random':
@@ -68,19 +79,22 @@ for i,sentence in enumerate(wordlist):
     
 train = ngrammed[:8000]
 #train = [list(NGRAM) for sentence in train for NGRAM in sentence]
-
+"""
 # %% the test sentences (do not run, saved already)
 #test = ngrammed[8000:]
 
 #with open(os.path.join(PATH, 'test_sentences.pkl'), 'wb') as f:
  #   pickle.dump(test, f)
 
+with open(os.path.join(PATH, 'test_sentences.pkl'), 'rb') as f:
+    test = pickle.load(f)
+
 # %% prepare the vocabulary
 vocab = language['word']
 
 # vocab to map indices
 vocabulary = Vocabulary(default_indexes={i: word for i,word in enumerate(vocab)})
-vocabulary.index_words(['<pad>']) # , '</pad>'
+vocabulary.index_words(['<pad>', '<EOS>']) # , '</pad>'
 print(vocabulary.index_to_word)
 
 # %% initialize the model
@@ -107,71 +121,5 @@ for sentence in train:
             optimizer.step()
 
 # %% save the model
-mname = f'{mtype}_1pass.pkl'
+mname = f'{mtype}_1pass-eos-syn.pkl'
 torch.save(model, os.path.join(PATH, mname))
-
-
-
-
-
-
-
-
-##################################################################################
-# %% kfold try out
-from sklearn.model_selection import KFold
-import time
-
-starttime = time.time()
-kf = KFold(n_splits=10)
-
-for nr, (train_idx, test_idx) in enumerate(kf.split(train)):
-    print(f'Training fold {nr}...')
-    train_data = np.asarray(train)[train_idx]
-    test_data = np.asarray(train)[test_idx]
-    
-    # TRAIN MODEL
-    for sentence in train_data:
-        model.zero_grad()
-            
-        sentence_in = prepare_sequence(sentence[:-1], vocabulary).to(device)
-        target = prepare_sequence(sentence[1:], vocabulary).to(device)
-        
-        prediction_scores = model(sentence_in)
-        
-        # compute the loss, gradients, update parameters
-        loss = loss_function(prediction_scores, target)
-        loss.backward()
-        optimizer.step()
-
-    # TEST MODEL
-    print(f'Testing fold {nr}...')
-    correct = 0
-    total = 0
-
-    for sentence in test_data:
-        with torch.no_grad():
-            inputs = prepare_sequence(sentence[:-1], vocabulary).to(device)
-            target = prepare_sequence(sentence[1:], vocabulary).to(device)
-            
-            scores = model(inputs)
-            
-            for w,seq in zip(sentence,scores):
-                idx = list(seq).index(max(seq))
-                wrd = vocabulary.index_to_word[idx]
-                
-                if w == wrd:
-                    correct += 1
-                    
-                total += 1
-        
-    print(f'Percentage correct: {correct/total*100}')
-        
-endtime = time.time()
-duration = endtime-starttime
-print(f'Program took {duration} seconds')
-        
-# %% 
-"""
-Next: check if prediction always of correct category & run random model
-"""

@@ -33,10 +33,13 @@ vocab = language['word']
 
 # vocab to map indices
 vocabulary = Vocabulary(default_indexes={i: word for i,word in enumerate(vocab)})
-vocabulary.index_words(['<pad>']) 
+vocabulary.index_words(['<pad>', '<EOS>']) 
+
+# %% 
+language['word']
 
 #%% load the model and the test sentences
-model = torch.load(f=f'{PATH}/{mtype}_1pass.pkl')
+model = torch.load(f=f'{PATH}/{mtype}_1pass-eos-syn.pkl')
 
 with open(f'{PATH}/test_sentences.pkl', 'rb') as f:
     test = pickle.load(f)
@@ -64,7 +67,10 @@ for sentence in test:
                 
                 results.iloc[i, 0] = list(word)
                 results.iloc[i, 1] = tgt_wrd
-                results.iloc[i, 2] = language.loc[language['word'] == tgt_wrd, 'pos'].item()
+                try:
+                    results.iloc[i, 2] = language.loc[language['word'] == tgt_wrd, 'pos'].item()
+                except ValueError:
+                    results.iloc[i, 2] = 'pad'
                 results.iloc[i, 3] = prediction
                 try:
                     results.iloc[i, 4] = language.loc[language['word'] == prediction, 'pos'].item()
@@ -78,4 +84,4 @@ for sentence in test:
             if i % 100 == 0:
                 print(f'Test word {i}. Movin on')
 
-results.to_pickle(os.path.join(PATH, f'{mtype}_1pass_results.pkl'))
+results.to_pickle(os.path.join(PATH, f'{mtype}_1pass_eos-syn-results.pkl'))
