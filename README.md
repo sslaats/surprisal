@@ -21,6 +21,6 @@ Script descriptions are: [script name] : [description]
 ### natural language / OpenSubtitles  [syntax leads to surprisal, surprisal does not lead to syntax]
 * preprocessing-opensubtitles.py : sentence & word tokenization and interpunction removal of OpenSubtitles corpus
 * train-model-natural-1layer.py : train model on OpenSubtitles corpus
-* test-model-natural : test model trained on OpenSubtitles corpus
-* correlation-natural : compares the surprisal values on the test set between scrambled and structured models 
+* test-model-natural.py : test model trained on OpenSubtitles corpus
+* correlation-natural.py : compares the surprisal values on the test set between scrambled and structured models 
 * clustering.py : use a RandomForestClassifier to classify surprisal values as coming from Spanish or English
