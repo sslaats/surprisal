@@ -10,6 +10,8 @@ import seaborn as sns
 
 import numpy as np
 import pandas as pd
+from scipy.stats import pearsonr
+import scipy
 
 import nltk 
 import os
@@ -17,19 +19,22 @@ import os
 # %% load results
 PATH = '/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations'
 
-random_results = pd.read_pickle(f'{PATH}/random_1pass_results.pkl')
-structured_results = pd.read_pickle(f'{PATH}/structured_1pass_results.pkl')
+#random_results = pd.read_pickle(f'{PATH}/random_1pass_eos_results.pkl')
+structured_results = pd.read_pickle(f'{PATH}/structured_1pass_eos_results.pkl')
+random_results = pd.read_pickle(f'{PATH}/structured_1pass_eos-syn-results.pkl')
 
 # %% plot histogram of surprisal values
-fig,ax=plt.subplots(figsize=(6,4))
+fig,ax=plt.subplots(figsize=(5,3))
 
-sns.histplot(random_results['target_surprisal'],ax=ax, color=sns.color_palette('flare',n_colors=1))
+sns.histplot(random_results['target_surprisal'],ax=ax, color=sns.color_palette("YlOrBr",n_colors=1)) #'flare' for random, "YlOrBr" for syntactic/wf adaptations
 sns.histplot(structured_results['target_surprisal'],ax=ax, color=sns.color_palette('crest',n_colors=1))
 
-plt.legend(['Random model', 'Structured model'], frameon=False)
+plt.legend(['Syntax altered model', 'Original structured model'], frameon=False) # ''Word-frequency altered', Original 
 ax.set_xlabel('Target surprisal (bits)')
 plt.tight_layout()
 sns.despine()
+
+fig.savefig(f'{PATH}/hist-syn-LTEXT.svg')
 
 # %% lexical accuracy
 random_results['lex_acc'] = np.where(random_results['prediction'] == random_results['target'], 1, 0)
@@ -94,5 +99,14 @@ for i,wrd in enumerate(language['word']):
     ax.hist([dist[i] for dist in probdist], alpha = 0.6)
 
 ax.legend(list(language['word']))
-# %%
 
+# %% correlate
+df = pd.DataFrame(data=np.asarray([random_results['target_surprisal'], structured_results['target_surprisal']], dtype=float).T, columns=['scrambled', 'structured'])
+
+rho = df.corr()
+pval = df.corr(method=lambda x, y: pearsonr(x, y)[1]) - np.eye(*rho.shape)
+p = pval.applymap(lambda x: ''.join(['*' for t in [.05, .01, .001] if x<=t]))
+print(rho.round(2).astype(str) + p)
+
+# %% test difference
+print(scipy.stats.ttest_ind(random_results['target_surprisal'], structured_results['target_surprisal']))
