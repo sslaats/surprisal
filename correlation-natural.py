@@ -43,7 +43,7 @@ ax.set_xlabel('Target surprisal (bits)')
 plt.tight_layout()
 sns.despine()
 
-fig.savefig(f'/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/hist-scrambled-{language}-LTEXT.svg')
+#fig.savefig(f'/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations/hist-scrambled-{language}-LTEXT.svg')
 
 # %% add them to same df
 results = structured_results.copy()
@@ -67,8 +67,20 @@ results['diff'] = results['random_surprisal'] - results['target_surprisal']
 print(np.mean(results['diff']))
 print(np.std(results['diff']))
 
-# %%
+# %% the means & std
 print(stats.ttest_ind(results['random_surprisal'], results['target_surprisal']))
+
+print(f"mean random: {np.mean(results['random_surprisal'])}, std: {np.std(results['random_surprisal'])}\n \
+      mean structured: {np.mean(results['target_surprisal'])}, std: {np.std(results['target_surprisal'])}")
+      
+print(f"Mean difference: {np.mean(results['random_surprisal'])-np.mean(results['target_surprisal'])}")
+
+# %% pinguoin for effect sizes and confidence intervals
+import pingouin
+
+res = pingouin.ttest(np.asarray(results['random_surprisal'].values, dtype=float), np.asarray(results['target_surprisal'].values, dtype=float), paired=False)
+
+print(res)
 
 # %% plotting the scrambled and structured languages
 spanish_scrambled = pd.read_csv('/project/3027007.06/simulations/results/spanish/116044-spanish-random-model-1layer-results-10000sents.csv')

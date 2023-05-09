@@ -21,7 +21,7 @@ PATH = '/home/lacnsg/sopsla/Documents/code-repositories/surprisal-simulations'
 
 #random_results = pd.read_pickle(f'{PATH}/random_1pass_eos_results.pkl')
 structured_results = pd.read_pickle(f'{PATH}/structured_1pass_eos_results.pkl')
-random_results = pd.read_pickle(f'{PATH}/structured_1pass_eos-syn-results.pkl')
+random_results = pd.read_pickle(f'{PATH}/random_1pass_eos_results.pkl')
 
 # %% plot histogram of surprisal values
 fig,ax=plt.subplots(figsize=(5,3))
@@ -34,7 +34,7 @@ ax.set_xlabel('Target surprisal (bits)')
 plt.tight_layout()
 sns.despine()
 
-fig.savefig(f'{PATH}/hist-syn-LTEXT.svg')
+#fig.savefig(f'{PATH}/hist-syn-LTEXT.svg')
 
 # %% lexical accuracy
 random_results['lex_acc'] = np.where(random_results['prediction'] == random_results['target'], 1, 0)
@@ -109,4 +109,19 @@ p = pval.applymap(lambda x: ''.join(['*' for t in [.05, .01, .001] if x<=t]))
 print(rho.round(2).astype(str) + p)
 
 # %% test difference
+t_result = scipy.stats.ttest_ind(random_results['target_surprisal'], structured_results['target_surprisal'])
+
 print(scipy.stats.ttest_ind(random_results['target_surprisal'], structured_results['target_surprisal']))
+
+# %% pinguoin for effect sizes and confidence intervals
+import pingouin
+
+res = pingouin.ttest(np.asarray(random_results['target_surprisal'].values, dtype=float), np.asarray(structured_results['target_surprisal'].values, dtype=float), paired=False)
+
+print(res)
+
+# %% print means and std
+print(f"mean random: {np.mean(random_results['target_surprisal'])}, std: {np.std(random_results['target_surprisal'])}\n \
+      mean structured: {np.mean(structured_results['target_surprisal'])}, std: {np.std(structured_results['target_surprisal'])}")
+      
+print(f"Mean difference: {np.mean(random_results['target_surprisal'])-np.mean(structured_results['target_surprisal'])}")
